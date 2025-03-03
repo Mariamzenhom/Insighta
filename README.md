@@ -4,5 +4,5 @@
 
 | Type  | URL                        | Accepts                            |
 |-------|----------------------------|------------------------------------|
-| GET   | `/api/login-with-google`   | -                                  |
-| GET   | `/api/google-callback`     | -                                  |
+| GET   | `/api/auth/google`         | -                                  |
+| GET   | `/api/auth/google-callback`| -                                  |
