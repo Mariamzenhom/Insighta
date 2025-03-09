@@ -11,6 +11,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Resources\UserProfileResource;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SendOtpMail;
+
 
 class RegisteredUserController extends Controller
 {
@@ -23,28 +29,54 @@ class RegisteredUserController extends Controller
     }
 
     /**
-     * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * Create User
+     * @param Request $request
+     * @return User
      */
-    public function store(Request $request): RedirectResponse
+
+    public function registerUser(Request $request)
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        try {
+            $viladateUser = Validator::make(
+                $request->all(),
+                [
+                    "name" => "required",
+                    "email" => "required|email|unique:users,email",
+                    "password" => "required|min:6",
+                ]
+            );
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+            if ($viladateUser->fails()) {
+                return response()->json([
+                    "status" => false,
+                    "message" => "Validation Error",
+                    "errors" => $viladateUser->errors()
+                ], 401);
+            }
 
-        event(new Registered($user));
+            $user = User::create([
+                "name" => $request->name,
+                "email" => $request->email,
+                "password" => Hash::make($request->password)
+            ]);
 
-        Auth::login($user);
+            $otp = rand(10000, 99999);
+            Cache::put('otp', $otp, now()->addMinutes(10));
 
-        return redirect(route('dashboard', absolute: false));
+            Mail::to($user->email)->send(new SendOtpMail($otp));
+
+            return response()->json([
+                "status" => true,
+                "message" => "User created successfully",
+                "token" => $user->createToken("API TOKEN")->plainTextToken,
+                "otp_message" => "Code sent successfully"
+            ], 200);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                "status" => false,
+                "message" => "User creation failed",
+            ], 500);
+        }
     }
 }
