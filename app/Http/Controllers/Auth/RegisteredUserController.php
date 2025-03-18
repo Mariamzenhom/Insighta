@@ -3,19 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\WelcomeMail;
 use App\Models\User;
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Http\RedirectResponse;
+use App\Models\Verifytoken;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Validator;
-use App\Http\Resources\UserProfileResource;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\SendOtpMail;
 
 
 class RegisteredUserController extends Controller
@@ -60,23 +55,66 @@ class RegisteredUserController extends Controller
                 "password" => Hash::make($request->password)
             ]);
 
-            $otp = rand(10000, 99999);
-            Cache::put('otp', $otp, now()->addMinutes(10));
-
-            Mail::to($user->email)->send(new SendOtpMail($otp));
+            $validToken = rand(10000, 99999);
+            $get_token = new Verifytoken();
+            $get_token->email = $user['email'];
+            $get_token->token = $validToken;
+            $get_token->save();
+            $get_user_email = $user['email'];
+            $get_user_name = $user['name'];
+            Mail::to($user->email)->send(new WelcomeMail($get_user_name, $get_user_email, $validToken));
 
             return response()->json([
                 "status" => true,
                 "message" => "User created successfully",
                 "token" => $user->createToken("API TOKEN")->plainTextToken,
-                "otp_message" => "Code sent successfully"
+                "Verification Code" => "Code sent successfully"
             ], 200);
 
         } catch (\Throwable $e) {
             return response()->json([
                 "status" => false,
-                "message" => "User creation failed",
+                "message" => $e->getMessage(),
             ], 500);
         }
     }
+
+    public function verifyAccount(Request $request)
+    {
+        $request->validate([
+            'token' => 'required'
+        ]);
+
+        $tokenData = Verifytoken::where('token', $request->token)->first();
+
+        if (!$tokenData) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid Code.'
+            ], 404);
+        }
+
+        $user = User::where('email', $tokenData->email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found.'
+            ], 404);
+        }
+
+        $user->is_activated = 1;
+        $user->email_verified_at = now();
+        $user->save();
+
+        //Delete the token after activation
+        $tokenData->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Your account has been activated successfully.'
+        ], 200);
+    }
+
+
 }
