@@ -8,3 +8,4 @@
 | GET   | `/api/auth/google-callback`| -                                  |
 | POST  | `/api/auth/login`          | -                                  | 
 | POST  | `/api/auth/register`       | -                                  | 
+| POST  | `/api/auth/verify-account` | -                                  |
