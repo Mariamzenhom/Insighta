@@ -1,10 +1,7 @@
 <?php
 
-use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Controllers\Auth\VerifyEmailController;
-use Laravel\Socialite\Facades\Socialite;
 use App\Http\Controllers\API\GoogleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -22,10 +19,9 @@ Route::controller(GoogleController::class)->group(function () {
 
 // ---------------------- Auth routes ----------------------
 Route::post('/auth/register', [RegisteredUserController::class, 'registerUser']);
+Route::post('/auth/verify-account', [RegisteredUserController::class, 'verifyAccount']);
 Route::post('/auth/login', [AuthenticatedSessionController::class, 'loginUser']);
-Route::post('/verify-otp', [VerifyEmailController::class, 'verifyOtp']);
 Route::post('/auth/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth:sanctum');
-
 
 
