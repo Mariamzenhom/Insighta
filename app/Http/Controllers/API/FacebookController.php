@@ -25,11 +25,12 @@ class FacebookController extends Controller
         try {
             $facebookUser = Socialite::driver('facebook')->stateless()->user();
 
-            $user = User::where('social_id', $facebookUser->id)->first();
+            $user = User::where('email', $facebookUser->email)->first();
 
             if ($user) {
                 // Update user details
-                $user->facebook_token = $facebookUser->facebook_token;
+                $user->facebook_token = $facebookUser->token;
+              	$user->save();
 
             } else {
                 // Create a new user
