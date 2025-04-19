@@ -27,7 +27,7 @@ class GoogleController extends Controller
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
 
-            $user = User::where('google_id', $googleUser->id)->first();
+            $user = User::where('social_id', $googleUser->id)->first();
 
             if ($user) {
                 // Update user details
@@ -38,7 +38,8 @@ class GoogleController extends Controller
                 $userData = User::create([
                     'name' => $googleUser->name,
                     'email' => $googleUser->email,
-                    'google_id' => $googleUser->id,
+                    'social_id' => $googleUser->id,
+                    'social_type' => 'google',
                     'password' => Hash::make('random_password')
                 ]);
             }
