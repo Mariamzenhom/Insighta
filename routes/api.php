@@ -5,6 +5,9 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\API\FacebookController;
 use App\Http\Controllers\API\GoogleController;
 use App\Http\Controllers\UsageController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\Auth\ResetPasswordOtpController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -32,10 +35,16 @@ Route::post('/auth/logout', [AuthenticatedSessionController::class, 'destroy'])
 
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/usage/start', [UsageController::class, 'startSession']);
-    Route::post('/usage/end', [UsageController::class, 'endSession']);
-    Route::get('/usage/report', [UsageController::class, 'getReport']);
-    Route::post('/usage/check-threshold', [UsageController::class, 'checkThreshold']);
+    Route::post('/facebook/usage/start', [FacebookController::class, 'startUsage']);
+    Route::post('/facebook/usage/end', [FacebookController::class, 'endUsage']);
 });
 
 
+Route::post('/password/reset/otp', [ResetPasswordOtpController::class, 'sendOtp']);
+Route::post('/password/reset/verify', [ResetPasswordOtpController::class, 'verifyOtpAndReset']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit']);      // جلب البيانات
+    Route::put('/profile', [ProfileController::class, 'update']);    // تعديل البيانات
+    Route::delete('/profile', [ProfileController::class, 'destroy']); // حذف الحساب
+});
