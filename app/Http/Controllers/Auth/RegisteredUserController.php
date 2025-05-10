@@ -38,6 +38,7 @@ class RegisteredUserController extends Controller
                     "name" => "required",
                     "email" => "required|email|unique:users,email",
                     "password" => "required|min:6",
+                    'role' => 'required|string',
                 ]
             );
 
@@ -52,7 +53,8 @@ class RegisteredUserController extends Controller
             $user = User::create([
                 "name" => $request->name,
                 "email" => $request->email,
-                "password" => Hash::make($request->password)
+                "password" => Hash::make($request->password),
+                "role" => $request->role,
             ]);
 
             $validToken = rand(10000, 99999);
