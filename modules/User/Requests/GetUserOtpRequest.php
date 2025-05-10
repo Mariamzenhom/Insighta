@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\User\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Ramsey\Uuid\Uuid;
+
+class GetUserOtpRequest extends FormRequest
+{
+    public function rules(): array
+    {
+        return [
+            'otp' => 'required|numeric'
+        ];
+    }
+
+}
