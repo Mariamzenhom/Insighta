@@ -23,35 +23,35 @@ class GoogleController extends Controller
 
     public function handleGoogleCallback()
     {
-
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
 
-            $user = User::where('google_id', $googleUser->id)->first();
+            $user = User::where('social_id', $googleUser->id)->first();
 
             if ($user) {
                 // Update user details
-                $user->google_token = $googleUser->google_token;
-
+                $user->google_token = $googleUser->token;
+                $user->save(); // Save the updated user details
             } else {
                 // Create a new user
-                $userData = User::create([
+                $user = User::create([
                     'name' => $googleUser->name,
                     'email' => $googleUser->email,
-                    'google_id' => $googleUser->id,
+                    'social_id' => $googleUser->id,
+                    'social_type' => 'google',
                     'password' => Hash::make('random_password')
                 ]);
             }
 
+            // Generate the token
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'User authenticated successfully',
-                'user' => $user,
+                'user' => $user->only(['id', 'name', 'email']),
                 'token' => $token
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',

@@ -1,0 +1,14 @@
+{
+    "name": "TherapySession",
+    "alias": "therapysession",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\TherapySession\\Providers\\TherapySessionServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": [],
+    "namespace": "Modules"
+}
