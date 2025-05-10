@@ -26,11 +26,11 @@ class User extends Authenticatable
         'social_id',
         'social_type',
         'email_verified_at',
-        'type',
         'role',
         'child_id',
         'otp',
-        'otp_expires_at'
+        'otp_expires_at',
+        'type',
     ];
 
     /**
