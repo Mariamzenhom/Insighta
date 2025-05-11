@@ -16,10 +16,6 @@
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
-<<<<<<< HEAD
-=======
-
->>>>>>> b80ff05f506aba6d3eb941da507a9344d1c8ab98
         <!-- Password -->
         <div class="mt-4">
             <x-input-label for="password" :value="__('Password')" />
