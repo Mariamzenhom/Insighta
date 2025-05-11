@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-
+use Modules\TherapySession\Models\TherapySession;
 
 class User extends Authenticatable
 {
@@ -26,6 +26,12 @@ class User extends Authenticatable
         'social_id',
         'social_type',
         'email_verified_at',
+        'role',
+        'child_id',
+        'otp',
+        'otp_expires_at',
+        'type',
+
     ];
 
     /**
@@ -49,5 +55,11 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+    public function therapySessions() {
+        return $this->hasMany(TherapySession::class);
+    }
+   public function child() {
+        return $this->hasOne(User::class, 'child_id');
     }
 }

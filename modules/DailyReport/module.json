@@ -1,0 +1,14 @@
+{
+    "name": "DailyReport",
+    "alias": "dailyreport",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\DailyReport\\Providers\\DailyReportServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": [],
+    "namespace": "Modules"
+}

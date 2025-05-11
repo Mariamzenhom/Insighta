@@ -1,0 +1,14 @@
+{
+    "name": "Therapist",
+    "alias": "therapist",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Therapist\\Providers\\TherapistServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": [],
+    "namespace": "Modules"
+}

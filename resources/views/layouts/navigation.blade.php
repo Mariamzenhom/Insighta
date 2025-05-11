@@ -15,6 +15,25 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    @if(auth()->user()->role == 'user')
+                        <x-nav-link :href="route('therapist.index')" :active="request()->routeIs('therapist.index')">
+                            {{ __('therapist') }}
+                        </x-nav-link>
+                     @endif
+                    <x-nav-link :href="route('therapy.session.index')" :active="request()->routeIs('therapy.session.index')">
+                        {{ __('Therapy Session') }}
+                    </x-nav-link>
+
+                    <x-nav-link :href="route('daily_reports.index')" :active="request()->routeIs('daily_reports.index')">
+                        {{ __('Daily Reports') }}
+                    </x-nav-link>
+
+                    <x-nav-link :href="route('parent.selectChildPage')" :active="request()->routeIs('parent.selectChildPage')">
+                        {{ __('Add Child') }}
+                    </x-nav-link>
+
+
+
                 </div>
             </div>
 
