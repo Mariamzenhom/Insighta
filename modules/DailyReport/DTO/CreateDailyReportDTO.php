@@ -12,6 +12,7 @@ class CreateDailyReportDTO
         public string $user_id,
         public string $report,
         public string $status,
+        public string $type
     ) {
     }
 
@@ -21,6 +22,7 @@ class CreateDailyReportDTO
             'user_id' => $this->user_id,
             'report' => $this->report,
             'status' => $this->status,
+            'type' => $this->type,
         ];
     }
 }

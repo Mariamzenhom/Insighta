@@ -10,7 +10,13 @@ class UpdateTherapistCommand
 {
     public function __construct(
         private UuidInterface $id,
-        private string $name,
+        private ?string $specialty = null,
+        private ?string $rating = null,
+        private ?string $price = null,
+        private ?string $name = null,
+        private ?string $phone = null,
+        private ?string $email = null,
+        private ?\Illuminate\Http\UploadedFile $file = null
     ) {
     }
 
@@ -28,6 +34,12 @@ class UpdateTherapistCommand
     {
         return array_filter([
             'name' => $this->name,
+            'specialty' => $this->specialty,
+            'rating' => $this->rating,
+            'price' => $this->price,
+            'phone' => $this->phone,
+            'email' => $this->email,
+            'file' => $this->file,
         ]);
     }
 }

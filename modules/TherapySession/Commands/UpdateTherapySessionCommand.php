@@ -10,7 +10,10 @@ class UpdateTherapySessionCommand
 {
     public function __construct(
         private UuidInterface $id,
-        private string $name,
+        private string $therapist_id,
+        private string $session_time,
+        private ?string $notes = null,
+        private bool $is_paid = false
     ) {
     }
 
@@ -19,15 +22,14 @@ class UpdateTherapySessionCommand
         return $this->id;
     }
 
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
 
     public function toArray(): array
     {
         return array_filter([
-            'name' => $this->name,
+            'therapist_id' => $this->therapist_id,
+            'session_time' => $this->session_time,
+            'notes' => $this->notes,
+            'is_paid' => $this->is_paid,
         ]);
     }
 }

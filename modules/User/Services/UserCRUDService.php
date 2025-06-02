@@ -56,7 +56,7 @@ class UserCRUDService
         $child = User::where('otp', $otp)->first();
 
         if (!$child) {
-            return back()->withErrors(['otp' => 'Invalid OTP']);
+            return false;
         }
 
         $parent = auth()->user();

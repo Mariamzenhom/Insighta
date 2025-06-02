@@ -20,7 +20,12 @@ class TherapistCRUDService
 
     public function create(CreateTherapistDTO $createTherapistDTO): Therapist
     {
-         return $this->repository->createTherapist($createTherapistDTO->toArray());
+        $createTherapist =  $this->repository->createTherapist($createTherapistDTO->toArray());
+        if ($createTherapistDTO->file){
+            $createTherapist->addMedia($createTherapistDTO->file)
+                ->toMediaCollection('therapist');
+        }
+        return $createTherapist->load('media');
     }
 
     public function list(int $page = 1, int $perPage = 10): array

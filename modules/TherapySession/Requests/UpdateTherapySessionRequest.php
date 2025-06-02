@@ -14,7 +14,10 @@ class UpdateTherapySessionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
+            'therapist_id' => 'required|exists:therapists,id',
+            'session_time' => 'required|date_format:Y-m-d H:i',
+            'notes' => 'nullable|string',
+            'is_paid' => 'nullable|boolean',
         ];
     }
 
@@ -22,7 +25,10 @@ class UpdateTherapySessionRequest extends FormRequest
     {
         return new UpdateTherapySessionCommand(
             id: Uuid::fromString($this->route('id')),
-            name: $this->get('name'),
+            therapist_id: $this->get('therapist_id'),
+            session_time: $this->get('session_time'),
+            notes: $this->get('notes'),
+            is_paid: (bool)$this->get('is_paid')
         );
     }
 }

@@ -14,9 +14,8 @@ class CreateTherapySessionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => 'required|exists:users,id',
             'therapist_id' => 'required|exists:therapists,id',
-            'session_time' => 'required|date',
+            'session_time' => 'required|date_format:Y-m-d H:i',
             'notes' => 'nullable|string',
             'is_paid' => 'nullable|boolean',
         ];
@@ -24,8 +23,9 @@ class CreateTherapySessionRequest extends FormRequest
 
     public function createDTO(): CreateTherapySessionDTO
     {
+        $authUser = auth('api')->user();
         return new CreateTherapySessionDTO(
-            user_id: $this->input('user_id'),
+            user_id: (string) ($authUser->role === 'parent' ? $authUser->child_id : $authUser->id),
             therapist_id: $this->input('therapist_id'),
             session_time: $this->input('session_time'),
             notes: $this->input('notes'),

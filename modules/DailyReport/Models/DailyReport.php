@@ -30,6 +30,7 @@ class DailyReport extends Model
         'user_id',
         'report',
         'status',
+        'type'
     ];
 
     protected $casts = [

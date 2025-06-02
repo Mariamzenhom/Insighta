@@ -9,11 +9,11 @@ use Ramsey\Uuid\UuidInterface;
 class CreateTherapySessionDTO
 {
     public function __construct(
-        public readonly string $user_id,
-        public readonly string $therapist_id,
-        public readonly string $session_time,
-        public readonly ?string $notes,
-        public readonly bool $is_paid,
+        public  string $user_id,
+        public  string $therapist_id,
+        public  string $session_time,
+        public  ?string $notes,
+        public  bool $is_paid,
     ) {
     }
 

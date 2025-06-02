@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\OtpMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Js;
 use Modules\User\Handlers\DeleteUserHandler;
 use Modules\User\Handlers\UpdateUserHandler;
 use Modules\User\Requests\GetUserOtpRequest;
@@ -21,39 +22,21 @@ class UserController extends Controller
         private UserCRUDService $userService,
     ) {
     }
-
-
-    public function showSelectChildPage()
-    {
-        return view('user::select-child'); // Point this to your Blade file
-    }
-
-    // Handle the OTP sending logic when a parent selects a child
     public function selectChildAndSendOtp(GetUserRequest $request)
     {
         $this->userService->sendOtp($request);
-
-        // Redirect to the OTP verification page with a success message
-        return redirect()->route('child.verifyOtp')->with('message', 'OTP sent successfully to the child email.');
+        return Json::success('OTP sent successfully to the child email.');
     }
 
-    // Show the form to verify OTP
-    public function showVerifyOtpPage()
-    {
-        return view('user::verify-otp'); // Point this to your Blade file
-    }
-
-    // Handle OTP verification when the child submits it
     public function verifyOtp(GetUserOtpRequest $request)
     {
 
        $verifyOtp = $this->userService->verifyOtp($request);
 
-
         if ($verifyOtp) {
-            return redirect()->route('dashboard')->with('message', 'Email verified successfully!');
-        }
+            return Json::success('Email verified successfully!');
 
-        return back()->withErrors(['otp' => 'Invalid or expired OTP']);
+        }
+        return Json::error('Invalid or expired OTP');
     }
 }

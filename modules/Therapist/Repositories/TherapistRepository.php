@@ -40,7 +40,15 @@ class TherapistRepository extends BaseRepository
 
     public function updateTherapist(UuidInterface $id, array $data): bool
     {
-        return $this->update($id, $data);
+        $therapist=$this->getTherapist($id);
+        $this->update($id, $data);
+        if (isset($data['file'])) {
+            $therapist->clearMediaCollection('therapist');
+            $therapist->addMedia($data['file'])
+                ->toMediaCollection('therapist');
+        }
+        return true;
+
     }
 
     public function deleteTherapist(UuidInterface $id): bool
