@@ -30,9 +30,9 @@ class UserServiceProvider extends ModuleServiceProvider
 
     public function mapRoutes(): void
     {
-        Route::prefix('dashboard/users')
-            ->middleware('web')
-            ->group($this->getModulePath() . '/Resources/routes/web.php');
+        Route::prefix('api/users')
+            ->middleware('api')
+            ->group($this->getModulePath() . '/Resources/routes/api.php');
 
     }
 }

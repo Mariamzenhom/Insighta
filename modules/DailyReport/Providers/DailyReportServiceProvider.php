@@ -30,14 +30,8 @@ class DailyReportServiceProvider extends ModuleServiceProvider
 
     public function mapRoutes(): void
     {
-        Route::prefix('api/v1/daily_reports')
+        Route::prefix('api/daily_reports')
             ->middleware('api')
             ->group($this->getModulePath() . '/Resources/routes/api.php');
-
-        Route::prefix('dashboard/daily_reports')
-            ->middleware('web')
-            ->group($this->getModulePath() . '/Resources/routes/web.php');
-
-
         }
 }

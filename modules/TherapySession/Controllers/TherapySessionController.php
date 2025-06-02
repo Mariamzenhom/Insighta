@@ -27,28 +27,49 @@ class TherapySessionController extends Controller
     ) {
     }
 
-    public function index()
+    public function index(GetTherapySessionListRequest $request): JsonResponse
     {
-        $sessions = $this->therapySessionService->list();
+        $list = $this->therapySessionService->list(
+                        (int) $request->get('page', 1),
+            (int) $request->get('per_page', 10)
+        );
 
-        return view('therapysession::index', [
-            'sessions' => $sessions['data'],
-        ]);
+        return Json::items(TherapySessionPresenter::collection($list['data']), paginationSettings: $list['pagination']);
+
     }
 
-    public function create()
+    public function store(CreateTherapySessionRequest $request): JsonResponse
     {
-        return view('therapysession::form', [
-            'users' => $this->therapySessionService->getUsers(),
-            'therapists' => $this->therapySessionService->getTherapists(),
-        ]);
+        $createdItem = $this->therapySessionService->create($request->createDTO());
+
+        $presenter = new TherapySessionPresenter($createdItem);
+
+        return Json::item($presenter->getData());
+    }
+    public function show(GetTherapySessionRequest $request): JsonResponse
+    {
+        $item = $this->therapySessionService->get(Uuid::fromString($request->route('id')));
+
+        $presenter = new TherapySessionPresenter($item);
+
+        return Json::item($presenter->getData());
+    }
+    public function update(UpdateTherapySessionRequest $request): JsonResponse
+    {
+        $command = $request->createUpdateTherapySessionCommand();
+        $this->updateTherapySessionHandler->handle($command);
+
+        $item = $this->therapySessionService->get($command->getId());
+
+        $presenter = new TherapySessionPresenter($item);
+
+        return Json::item($presenter->getData());
     }
 
-    public function store(CreateTherapySessionRequest $request)
+    public function destroy(DeleteTherapySessionRequest $request): JsonResponse
     {
-        $this->therapySessionService->create($request->createDTO());
+        $this->deleteTherapySessionHandler->handle(Uuid::fromString($request->route('id')));
 
-        return redirect()->route('therapy.session.index')
-                         ->with('success', 'Therapy session created successfully.');
+        return Json::deleted();
     }
 }

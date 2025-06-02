@@ -18,6 +18,7 @@ use Modules\Therapist\Requests\GetTherapistRequest;
 use Modules\Therapist\Requests\UpdateTherapistRequest;
 use Modules\Therapist\Services\TherapistCRUDService;
 use Ramsey\Uuid\Uuid;
+use Illuminate\Http\JsonResponse;
 
 class TherapistController extends Controller
 {
@@ -28,47 +29,35 @@ class TherapistController extends Controller
     ) {
     }
 
-    public function index(GetTherapistListRequest $request): View
+    public function index(GetTherapistListRequest $request): JsonResponse
     {
         $list = $this->therapistService->list(
             (int) $request->get('page', 1),
             (int) $request->get('per_page', 10)
         );
 
-        return view('therapist::index', [
-            'items' => $list['data'],
-        ]);
+        return Json::items(TherapistPresenter::collection($list['data']), paginationSettings: $list['pagination']);
     }
 
-    public function create(GetTherapistRequest $request): View
-    {
-        $user = $this->therapistService->getUser();
-
-        return view('therapist::form',[
-            'users'=> $user,
-        ]);
-    }
-
-    public function store(CreateTherapistRequest $request)
+    public function store(CreateTherapistRequest $request):JsonResponse
     {
         $createdItem = $this->therapistService->create($request->createCreateTherapistDTO());
 
         $presenter = new TherapistPresenter($createdItem);
 
-        return redirect()->route('therapist.index');
+        return Json::item($presenter->getData());
     }
 
-    public function edit(GetTherapistRequest $request): View
+    public function show(GetTherapistRequest $request): JsonResponse
     {
-        $user = $this->therapistService->getUser();
+        $item = $this->therapistService->get(Uuid::fromString($request->route('id')));;
 
-        return view('therapist::form',[
-            'users'=> $user,
-            'therapist' => $this->therapistService->get(Uuid::fromString($request->route('id'))),
-        ]);
+        $presenter = new TherapistPresenter($item);
+
+        return Json::item($presenter->getData());
     }
 
-    public function update(UpdateTherapistRequest $request)
+    public function update(UpdateTherapistRequest $request): JsonResponse
     {
         $command = $request->createUpdateTherapistCommand();
         $this->updateTherapistHandler->handle($command);
@@ -77,13 +66,13 @@ class TherapistController extends Controller
 
         $presenter = new TherapistPresenter($item);
 
-        return redirect()->route('therapist.index');
+        return Json::item($presenter->getData());
     }
 
-    public function delete(DeleteTherapistRequest $request): View
+    public function delete(DeleteTherapistRequest $request): JsonResponse
     {
         $this->deleteTherapistHandler->handle(Uuid::fromString($request->route('id')));
 
-        return view::deleted();
+        return Json::deleted();
     }
 }

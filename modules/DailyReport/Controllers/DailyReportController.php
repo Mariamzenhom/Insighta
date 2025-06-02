@@ -20,15 +20,14 @@ class DailyReportController extends Controller
     ) {
     }
 
-    public function index(GetDailyReportListRequest $request)
+    public function index(GetDailyReportListRequest $request):JsonResponse
     {
         $list = $this->dailyReportService->list(
             (int) $request->get('page', 1),
             (int) $request->get('per_page', 10)
         );
 
-     return view('daily-reports::index', ['reports' => $list['data']]);
-    }
+        return Json::items(DailyReportPresenter::collection($list['data']), paginationSettings: $list['pagination']);    }
 
     public function store(CreateDailyReportRequest $request): JsonResponse
     {

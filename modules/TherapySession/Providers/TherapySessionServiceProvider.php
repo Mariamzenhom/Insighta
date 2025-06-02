@@ -29,9 +29,9 @@ class TherapySessionServiceProvider extends ModuleServiceProvider
 
     public function mapRoutes(): void
     {
-            Route::prefix('dashboard/therapy_sessions')
-            ->middleware('web')
-            ->group($this->getModulePath() . '/Resources/routes/web.php');
+            Route::prefix('api/therapy_sessions')
+            ->middleware('api')
+            ->group($this->getModulePath() . '/Resources/routes/api.php');
 
     }
 }

@@ -13,9 +13,10 @@ class CreateDailyReportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => 'required|string',
+            'user_id' => 'required|string|exists:users,id',
             'report'=> 'required|string',
             'status'=> 'required|string',
+            'type' =>'required'
         ];
     }
 
@@ -25,6 +26,7 @@ class CreateDailyReportRequest extends FormRequest
             user_id: $this->get('user_id'),
             report: $this->get('report'),
             status: $this->get('status'),
+            type: $this->get('type')
         );
     }
 }

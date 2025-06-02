@@ -20,10 +20,10 @@ class DailyReportPresenter extends AbstractPresenter
     {
         return [
             'id' => $this->dailyReport->id,
-            'user_id' => $this->dailyReport->user_id,
-            'user' => $this->dailyReport->user,
             'report' => $this->dailyReport->report,
             'status' => $this->dailyReport->status,
+            'type' => $this->dailyReport->type,
+            'user' => $this->dailyReport->user,
         ];
     }
 }

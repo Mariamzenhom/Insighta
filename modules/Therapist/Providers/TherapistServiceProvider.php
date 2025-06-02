@@ -30,9 +30,9 @@ class TherapistServiceProvider extends ModuleServiceProvider
 
     public function mapRoutes(): void
     {
-        Route::prefix('dashboard/therapists')
-            ->middleware('web')
-            ->group($this->getModulePath() . '/Resources/routes/web.php');
+        Route::prefix('api/therapists')
+            ->middleware('api')
+            ->group($this->getModulePath() . '/Resources/routes/api.php');
 
     }
 }

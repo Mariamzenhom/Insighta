@@ -14,7 +14,13 @@ class UpdateTherapistRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
+            'specialty' => 'required|',
+            'rating' => 'required|',
+            'price' => 'required|',
+            'name' => 'required',
+            'phone' => 'required',
+            'email' => 'required|email',
+            'file' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
         ];
     }
 
@@ -22,7 +28,13 @@ class UpdateTherapistRequest extends FormRequest
     {
         return new UpdateTherapistCommand(
             id: Uuid::fromString($this->route('id')),
-            name: $this->get('name'),
+            specialty:$this->get('specialty'),
+            rating:$this->get('rating'),
+            price:$this->get('price'),
+            name:$this->get('name'),
+            phone:$this->get('phone'),
+            email:$this->get('email'),
+            file: $this->file('file')
         );
     }
 }
