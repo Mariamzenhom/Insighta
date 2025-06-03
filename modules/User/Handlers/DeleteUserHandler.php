@@ -14,7 +14,7 @@ class DeleteUserHandler
     ) {
     }
 
-    public function handle(UuidInterface $id)
+    public function handle($id)
     {
         $this->repository->deleteUser($id);
     }

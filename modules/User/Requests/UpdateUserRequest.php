@@ -15,14 +15,16 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             'name' => 'required|string',
+            'email' => 'required|email|unique:users,email,' . $this->route('id'),
         ];
     }
 
     public function createUpdateUserCommand(): UpdateUserCommand
     {
         return new UpdateUserCommand(
-            id: Uuid::fromString($this->route('id')),
+            id:$this->route('id'),
             name: $this->get('name'),
+            email: $this->get('email')
         );
     }
 }

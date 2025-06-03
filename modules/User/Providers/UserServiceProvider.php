@@ -16,7 +16,7 @@ class UserServiceProvider extends ModuleServiceProvider
 
     public function boot(): void
     {
-       $this->loadViewsFrom(__DIR__ . '/../Resources/views', 'user');
+       $this->loadViewsFrom(__DIR__ . '/../Resources/views', 'users');
 
         $this->registerTranslations();
         //$this->registerConfig();
@@ -34,5 +34,8 @@ class UserServiceProvider extends ModuleServiceProvider
             ->middleware('api')
             ->group($this->getModulePath() . '/Resources/routes/api.php');
 
+        Route::prefix('dashboard/users')
+            ->middleware('web')
+            ->group($this->getModulePath() . '/Resources/routes/web.php');
     }
 }

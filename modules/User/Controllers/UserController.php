@@ -4,39 +4,63 @@ declare(strict_types=1);
 
 namespace Modules\User\Controllers;
 
-use BasePackage\Shared\Presenters\Json;
 use App\Http\Controllers\Controller;
-use App\Mail\OtpMail;
-use App\Models\User;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Js;
+use Illuminate\Http\Request;
 use Modules\User\Handlers\DeleteUserHandler;
 use Modules\User\Handlers\UpdateUserHandler;
-use Modules\User\Requests\GetUserOtpRequest;
-use Modules\User\Requests\GetUserRequest;
+use Modules\User\Requests\CreateUserRequest;
+use Modules\User\Requests\DeleteUserRequest;
+use Modules\User\Requests\UpdateUserRequest;
 use Modules\User\Services\UserCRUDService;
+use Ramsey\Uuid\Uuid;
 
 class UserController extends Controller
 {
     public function __construct(
         private UserCRUDService $userService,
-    ) {
-    }
-    public function selectChildAndSendOtp(GetUserRequest $request)
+        private UpdateUserHandler $updateUserHandler,
+        private DeleteUserHandler $deleteUserHandler,
+
+        ) {}
+    public function index(Request $request)
     {
-        $this->userService->sendOtp($request);
-        return Json::success('OTP sent successfully to the child email.');
+        $result = $this->userService->list(
+            (int) $request->get('page', 1),
+            10
+        );
+
+        return view('users::index', [
+            'users' => $result['data'], // this is a simple array
+            'pagination' => $result['pagination']
+        ]);
     }
 
-    public function verifyOtp(GetUserOtpRequest $request)
+    public function store(CreateUserRequest $request)
     {
+        $this->userService->create($request->createCreateUserDTO());
 
-       $verifyOtp = $this->userService->verifyOtp($request);
+        return redirect()->route('users.index')->with('success', 'User created successfully.');
+    }
 
-        if ($verifyOtp) {
-            return Json::success('Email verified successfully!');
+    public function edit(string $id)
+    {
+        $user = $this->userService->get($id);
 
-        }
-        return Json::error('Invalid or expired OTP');
+        return view('users::edit', compact('user'));
+    }
+
+    public function update(UpdateUserRequest $request)
+    {
+        $command = $request->createUpdateUserCommand();
+        $this->updateUserHandler->handle($command);
+
+        return redirect()->route('users.index')->with('success', 'User updated.');
+    }
+
+    public function destroy(DeleteUserRequest $request)
+    {
+        $this->deleteUserHandler->handle($request->route('id'));
+
+        return redirect()->route('users.index')->with('success', 'User deleted.');
     }
 }
