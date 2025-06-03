@@ -9,12 +9,13 @@ use Ramsey\Uuid\UuidInterface;
 class UpdateUserCommand
 {
     public function __construct(
-        private UuidInterface $id,
+        private  $id,
         private string $name,
+        private ?string $email = null
     ) {
     }
 
-    public function getId(): UuidInterface
+    public function getId()
     {
         return $this->id;
     }
@@ -28,6 +29,7 @@ class UpdateUserCommand
     {
         return array_filter([
             'name' => $this->name,
+            'email' => $this->email,
         ]);
     }
 }

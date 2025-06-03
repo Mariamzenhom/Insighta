@@ -26,10 +26,10 @@ class UserRepository extends BaseRepository
         return $this->paginatedList([], $page, $perPage);
     }
 
-    public function getUser(UuidInterface $id): User
+    public function getUser($id): User
     {
         return $this->findOneByOrFail([
-            'id' => $id->toString(),
+            'id' => $id,
         ]);
     }
 
@@ -38,12 +38,12 @@ class UserRepository extends BaseRepository
         return $this->create($data);
     }
 
-    public function updateUser(UuidInterface $id, array $data): bool
+    public function updateUser($id, array $data): bool
     {
         return $this->update($id, $data);
     }
 
-    public function deleteUser(UuidInterface $id): bool
+    public function deleteUser($id): bool
     {
         return $this->delete($id);
     }

@@ -32,7 +32,7 @@ class UserCRUDService
         );
     }
 
-    public function get(UuidInterface $id): User
+    public function get($id): User
     {
         return $this->repository->getUser(
             id: $id,
