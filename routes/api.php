@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\API\FacebookController;
 use App\Http\Controllers\API\GoogleController;
@@ -40,7 +41,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // ---------------------- Password reset with OTP ----------------------
 Route::post('/password/reset/otp', [ResetPasswordOtpController::class, 'sendOtp']);
-Route::post('/password/reset/verify', [ResetPasswordOtpController::class, 'verifyOtpAndReset']);
+Route::post('/password/reset/verify', [ResetPasswordOtpController::class, 'verifyOtp']);
+Route::post('/password/reset/confirm', [ResetPasswordOtpController::class, 'resetPassword']);
+
+
 
 // ---------------------- Profile routes ----------------------
 Route::middleware('auth:sanctum')->group(function () {
@@ -48,3 +52,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/profile', [ProfileController::class, 'update']);    // تعديل البيانات
     Route::delete('/profile', [ProfileController::class, 'destroy']); // حذف الحساب
 });
+
+
+Route::middleware('auth:sanctum')->get('/notifications', [NotificationController::class, 'index']);
