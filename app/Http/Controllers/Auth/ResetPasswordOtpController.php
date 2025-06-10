@@ -7,8 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 use Illuminate\Support\Str;
+use App\Models\User;
+use App\Services\NotificationService;
 
 class ResetPasswordOtpController extends Controller
 {
@@ -19,22 +20,43 @@ class ResetPasswordOtpController extends Controller
         ]);
 
         $otp = rand(100000, 999999);
-
-        // خزّن OTP لمدة 5 دقايق
         Cache::put('otp_' . $request->email, $otp, now()->addMinutes(5));
 
-        // إرسال الإيميل
-        Mail::raw("كود التحقق الخاص بك هو: $otp", function ($message) use ($request) {
-            $message->to($request->email)
-                    ->subject('كود إعادة تعيين كلمة المرور');
+        Mail::raw("Your password reset code is: $otp", function ($message) use ($request) {
+            $message->to($request->email)->subject('Password Reset Code');
         });
 
         return response()->json([
-            'message' => 'تم إرسال كود التحقق إلى بريدك الإلكتروني.'
+            'message' => 'Verification code has been sent to your email.'
         ]);
     }
 
-    public function verifyOtpAndReset(Request $request)
+
+
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'otp' => 'required',
+        ]);
+
+        $cachedOtp = Cache::get('otp_' . $request->email);
+
+        if (!$cachedOtp || $cachedOtp != $request->otp) {
+            return response()->json([
+                'message' => 'Invalid or expired OTP.'
+            ], 422);
+        }
+
+        // حطينا فلاج إنه فعّل OTP
+        Cache::put('otp_verified_' . $request->email, true, now()->addMinutes(10));
+
+        return response()->json([
+            'message' => 'OTP has been verified successfully.'
+        ]);
+    }
+  
+  	public function resetPassword(Request $request)
     {
         $request->validate([
             'email' => 'required|email|exists:users,email',
@@ -45,7 +67,9 @@ class ResetPasswordOtpController extends Controller
         $cachedOtp = Cache::get('otp_' . $request->email);
 
         if (!$cachedOtp || $cachedOtp != $request->otp) {
-            return response()->json(['message' => 'OTP غير صحيح أو منتهي الصلاحية.'], 422);
+            return response()->json([
+                'message' => 'Invalid or expired OTP.'
+            ], 422);
         }
 
         $user = User::where('email', $request->email)->first();
@@ -53,12 +77,19 @@ class ResetPasswordOtpController extends Controller
         $user->remember_token = Str::random(60);
         $user->save();
 
-        // حذف الكاش بعد الاستخدام
         Cache::forget('otp_' . $request->email);
+        Cache::forget('otp_verified_' . $request->email); // احتياطي لو كنتي بتستخدميه
+
+        (new NotificationService())->sendNotification(
+            $user->id,
+            'Password Changed',
+            'Your password has been successfully updated.'
+        );
 
         return response()->json([
-            'message' => 'تم تغيير كلمة المرور بنجاح.'
+            'message' => 'Password has been successfully changed.'
         ]);
     }
-}
 
+
+}
