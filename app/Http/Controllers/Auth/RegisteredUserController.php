@@ -6,72 +6,75 @@ use App\Http\Controllers\Controller;
 use App\Mail\WelcomeMail;
 use App\Models\User;
 use App\Models\Verifytoken;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\View\View;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
-
+use Illuminate\Validation\Rules\Password;
+use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
-    /**
-     * Display the registration view.
-     */
+    public function __construct()
+    {
+        // إضافة قاعدة التحقق من DNS كقاعدة مخصصة
+        Validator::extend('dns_email', function ($attribute, $value, $parameters, $validator) {
+            $domain = substr(strrchr($value, "@"), 1);
+            return checkdnsrr($domain, 'MX') || checkdnsrr($domain, 'A');
+        }, 'The :attribute must have a valid email domain.');
+    }
+
     public function create(): View
     {
         return view('auth.register');
     }
 
-    /**
-     * Create User
-     * @param Request $request
-     * @return User
-     */
-
     public function registerUser(Request $request)
     {
         try {
-            $viladateUser = Validator::make(
+            $validateUser = Validator::make(
                 $request->all(),
                 [
-                    "name" => "required",
-                    "email" => "required|email|unique:users,email",
-                    "password" => "required|min:6",
-                    'role' => 'required|string',
+                    "name" => "required|string|max:255",
+                    "email" => "required|email|unique:users,email|dns_email",
+                    "password" => [
+                        "required",
+                        Password::min(8)
+                            ->mixedCase()
+                            ->numbers()
+                            ->symbols(),
+                        "confirmed",
+                    ],
+
+                    "role" => "required|string|in:user,child,parent",
                 ]
             );
 
-            if ($viladateUser->fails()) {
+
+            if ($validateUser->fails()) {
                 return response()->json([
                     "status" => false,
                     "message" => "Validation Error",
-                    "errors" => $viladateUser->errors()
-                ], 401);
+                    "errors" => $validateUser->errors()
+                ], 422);
             }
 
             $user = User::create([
                 "name" => $request->name,
                 "email" => $request->email,
                 "password" => Hash::make($request->password),
+              	'email_verified_at' => now(),
                 "role" => $request->role,
+                "is_activated" => 1,
             ]);
 
-            $validToken = rand(10000, 99999);
-            $get_token = new Verifytoken();
-            $get_token->email = $user['email'];
-            $get_token->token = $validToken;
-            $get_token->save();
-            $get_user_email = $user['email'];
-            $get_user_name = $user['name'];
-            Mail::to($user->email)->send(new WelcomeMail($get_user_name, $get_user_email, $validToken));
 
             return response()->json([
                 "status" => true,
-                "message" => "User created successfully",
+                "message" => 'User registered successfully. You can now log in.',
                 "token" => $user->createToken("API TOKEN")->plainTextToken,
-                "Verification Code" => "Code sent successfully"
-            ], 200);
+            ], 201);
 
         } catch (\Throwable $e) {
             return response()->json([
@@ -80,43 +83,6 @@ class RegisteredUserController extends Controller
             ], 500);
         }
     }
-
-    public function verifyAccount(Request $request)
-    {
-        $request->validate([
-            'token' => 'required'
-        ]);
-
-        $tokenData = Verifytoken::where('token', $request->token)->first();
-
-        if (!$tokenData) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Invalid Code.'
-            ], 404);
-        }
-
-        $user = User::where('email', $tokenData->email)->first();
-
-        if (!$user) {
-            return response()->json([
-                'status' => false,
-                'message' => 'User not found.'
-            ], 404);
-        }
-
-        $user->is_activated = 1;
-        $user->email_verified_at = now();
-        $user->save();
-
-        //Delete the token after activation
-        $tokenData->delete();
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Your account has been activated successfully.'
-        ], 200);
-    }
-
-
+  
 }
+
