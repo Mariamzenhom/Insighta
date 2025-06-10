@@ -10,34 +10,22 @@ use Illuminate\View\View;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use App\Services\NotificationService;
 
 class AuthenticatedSessionController extends Controller
 {
-    /**
-     * Display the login view.
-     */
     public function create(): View
     {
         return view('auth.login');
     }
 
-    /**
-     * Handle an incoming authentication request.
-     */
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
         $request->session()->regenerate();
-
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
-    /**
-     * Handle an incoming authentication request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
-     */
     public function loginUser(Request $request)
     {
         try {
@@ -57,16 +45,25 @@ class AuthenticatedSessionController extends Controller
                 ], 401);
             }
 
-            $remember = $request->has("remember") ;
+            $remember = $request->has("remember");
 
-            if (!Auth::attempt($request->only("email", "password"), $remember)) {
+            $user = User::where("email", $request->email)->first();
+
+            if (!$user || !Auth::attempt($request->only("email", "password"), $remember)) {
                 return response()->json([
                     "status" => false,
-                    "message" => "Email & Password do not match"
+                    "message" => "Email or password is incorrect."
                 ], 401);
             }
 
-            $user = User::where("email", $request->email)->first();
+   
+            // 🔔 Notification on successful login
+            $notificationService = new NotificationService();
+            $notificationService->sendNotification(
+                $user->id,
+                'Login Successful',
+                'You have successfully logged in to your account.'
+            );
 
             return response()->json([
                 "status" => true,
@@ -82,15 +79,10 @@ class AuthenticatedSessionController extends Controller
         }
     }
 
-    /**
-     * Destroy an authenticated session.
-     */
-
     public function destroy(Request $request)
     {
         Auth::guard('web')->logout();
 
-        // Revoke current access token
         if ($request->user()) {
             $request->user()->tokens()->delete();
         }
