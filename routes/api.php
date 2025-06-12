@@ -1,57 +1,62 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Controllers\API\FacebookController;
-use App\Http\Controllers\API\GoogleController;
-use App\Http\Controllers\UsageController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Auth\PasswordResetController;
-use App\Http\Controllers\Auth\ResetPasswordOtpController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\Auth\ResetPasswordOtpController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UsageController;
+use App\Http\Controllers\API\FacebookController;
+use App\Http\Controllers\API\GoogleController;
+use App\Http\Controllers\AIRecommendationController;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum', 'twofactor');
+// ------------------ Public Auth Routes ------------------
+Route::prefix('auth')->group(function () {
+    Route::post('/register', [RegisteredUserController::class, 'registerUser']);
+    Route::post('/login', [AuthenticatedSessionController::class, 'loginUser']);
 
-// ----------------------- Google routes ----------------------
-Route::controller(GoogleController::class)->group(function () {
-    Route::get('/auth/google', 'redirectToGoogle');
-    Route::get('/auth/google/callback', 'handleGoogleCallback');
+    // Social login
+    Route::get('/google', [GoogleController::class, 'redirectToGoogle']);
+    Route::get('/google/callback', [GoogleController::class, 'handleGoogleCallback']);
+    Route::get('/facebook', [FacebookController::class, 'redirectToFacebook']);
+    Route::get('/facebook/callback', [FacebookController::class, 'handleFacebookCallback']);
+
+    // Password Reset with OTP
+    Route::post('/password/reset/otp', [ResetPasswordOtpController::class, 'sendOtp']);
+    Route::post('/password/reset/verify', [ResetPasswordOtpController::class, 'verifyOtp']);
+    Route::post('/password/reset/confirm', [ResetPasswordOtpController::class, 'resetPassword']);
 });
 
-// ----------------------- Facebook routes ----------------------
-Route::get('/auth/facebook', [FacebookController::class, 'redirectToFacebook']);
-Route::get('/auth/facebook/callback', [FacebookController::class, 'handleFacebookCallback']);
-
-// ---------------------- Auth routes ----------------------
-Route::post('/auth/register', [RegisteredUserController::class, 'registerUser']);
-Route::post('/auth/verify-account', [RegisteredUserController::class, 'verifyAccount']);
-Route::post('/auth/login', [AuthenticatedSessionController::class, 'loginUser']);
-Route::post('/auth/logout', [AuthenticatedSessionController::class, 'destroy'])
-    ->middleware('auth:sanctum');
-
-// ---------------------- Facebook usage tracking ----------------------
+// ------------------ Protected Routes (auth:sanctum) ------------------
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/facebook/usage/start', [FacebookController::class, 'startUsage']);
-    Route::post('/facebook/usage/end', [FacebookController::class, 'endUsage']);
+
+    // MFA check on user info
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    })->middleware('twofactor');
+
+    // Auth logout
+    Route::post('/auth/logout', [AuthenticatedSessionController::class, 'destroy']);
+
+    // Profile management
+    // Profile management
+    Route::prefix('profile')->group(function () {
+        Route::get('/', [ProfileController::class, 'edit']);       // Get profile
+        Route::put('/', [ProfileController::class, 'updateName']);     // Update profile
+        Route::delete('/', [ProfileController::class, 'destroy']); // Delete profile
+        Route::post('/avatar', [ProfileController::class, 'updateAvatar']); // ✅ New
+    });
+
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index']);
 });
 
-// ---------------------- Password reset with OTP ----------------------
-Route::post('/password/reset/otp', [ResetPasswordOtpController::class, 'sendOtp']);
-Route::post('/password/reset/verify', [ResetPasswordOtpController::class, 'verifyOtp']);
-Route::post('/password/reset/confirm', [ResetPasswordOtpController::class, 'resetPassword']);
-
-
-
-// ---------------------- Profile routes ----------------------
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit']);      // جلب البيانات
-    Route::put('/profile', [ProfileController::class, 'update']);    // تعديل البيانات
-    Route::delete('/profile', [ProfileController::class, 'destroy']); // حذف الحساب
+// ------------------ AI Recommendations ------------------
+Route::prefix('ai')->group(function () {
+    Route::post('/recommend/emotions', [AIRecommendationController::class, 'getEmotionRecommendations']);
+    Route::post('/recommend/content', [AIRecommendationController::class, 'getContentRecommendations']);
+    Route::get('/emotions', [AIRecommendationController::class, 'getAvailableEmotions']);
 });
-
-
-Route::middleware('auth:sanctum')->get('/notifications', [NotificationController::class, 'index']);
