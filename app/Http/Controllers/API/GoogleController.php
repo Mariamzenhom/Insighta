@@ -6,16 +6,12 @@ use App\Http\Controllers\Controller;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Laravel\Sanctum\HasApiTokens;
 
 class GoogleController extends Controller
 {
-    use HasApiTokens;
     public function redirectToGoogle()
     {
-
         return response()->json([
             'url' => Socialite::driver('google')->stateless()->redirect()->getTargetUrl()
         ]);
@@ -26,40 +22,38 @@ class GoogleController extends Controller
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
 
-            $user = User::where('social_id', $googleUser->id)->first();
+            // نحاول نجيب اليوزر بالإيميل أولًا
+            $user = User::where('email', $googleUser->email)->first();
 
             if ($user) {
-                // Update user details
-                $user->google_token = $googleUser->token;
-                $user->save(); // Save the updated user details
+                $user->social_id = $googleUser->id;
+                $user->social_type = 'google';
+                $user->save();
             } else {
-                // Create a new user
                 $user = User::create([
                     'name' => $googleUser->name,
                     'email' => $googleUser->email,
                     'social_id' => $googleUser->id,
                     'social_type' => 'google',
-                    'password' => Hash::make('random_password')
+                    'password' => Hash::make(uniqid())
                 ]);
             }
 
-            // Generate the token
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
-                'status' => 'success',
-                'message' => 'User authenticated successfully',
-                'user' => $user->only(['id', 'name', 'email']),
+                'status' => true,
+                'message' => 'User logged in successfully',
                 'token' => $token
             ]);
+
         } catch (\Exception $e) {
             return response()->json([
-                'status' => 'error',
+                'status' => false,
                 'message' => 'Authentication failed',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
-
-
 }
+
