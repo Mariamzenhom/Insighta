@@ -27,7 +27,8 @@ class DailyReportController extends Controller
             (int) $request->get('per_page', 10)
         );
 
-        return Json::items(DailyReportPresenter::collection($list['data']), paginationSettings: $list['pagination']);    }
+        return Json::items(DailyReportPresenter::collection($list['data']), paginationSettings: $list['pagination']);
+    }
 
     public function store(CreateDailyReportRequest $request): JsonResponse
     {
