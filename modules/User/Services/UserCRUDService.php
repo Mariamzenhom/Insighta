@@ -63,7 +63,7 @@ class UserCRUDService
 
         $parent->update(['child_id' => $child->id]);
 
-                if ($otp == $child->otp && $child->otp_expires_at > now()) {
+        if ($otp == $child->otp && $child->otp_expires_at > now()) {
             $child->email_verified_at = now();
             $child->save();
 
