@@ -25,7 +25,7 @@ class CreateTherapySessionRequest extends FormRequest
     {
         $authUser = auth('api')->user();
         return new CreateTherapySessionDTO(
-            user_id: (string) ($authUser->role === 'parent' ? $authUser->child_id : $authUser->id),
+            user_id: (string) ( $authUser->id),
             therapist_id: $this->input('therapist_id'),
             session_time: $this->input('session_time'),
             notes: $this->input('notes'),
