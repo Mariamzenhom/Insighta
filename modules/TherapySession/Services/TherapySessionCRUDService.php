@@ -22,30 +22,23 @@ class TherapySessionCRUDService
     {
          return $this->repository->createTherapySession($createTherapySessionDTO->toArray());
     }
-
     public function list(int $page = 1, int $perPage = 10): array
     {
-        $user = auth()->user()->role ;
+        $userId = [];
 
-        if($user == 'child' ){
-            $userId = auth()->user()->id;
-
-        }elseif($user == 'parent'){
-            $userId = auth()->user()->child_id;
-        }else{
-            return $this->repository->paginated(
-                            page: $page,
-                            perPage: $perPage,
-                    );
+        if (auth()->user()->child_id !== null) {
+            $userId[] = auth()->user()->id;
+            $userId[] = auth()->user()->child_id;
+        } else {
+            $userId[] = auth()->user()->id;
         }
 
         return $this->repository->paginated(
             ['user_id' => $userId],
-                    page: $page,
-                    perPage: $perPage,
-                );
+            page: $page,
+            perPage: $perPage
+        );
     }
-
     public function get(UuidInterface $id): TherapySession
     {
         return $this->repository->getTherapySession(
